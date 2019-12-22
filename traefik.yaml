@@ -1,0 +1,41 @@
+log:
+  level: DEBUG
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+#api:
+#  insecure: true
+
+certificatesResolvers:
+  c_jru_me:
+    acme:
+      email: ich+b@jru.me
+      storage: /acme/acme.json
+      httpChallenge:
+        # used during the challenge
+        entryPoint: web
+
+tls:
+  certificates:
+    - certFile: /acme/domain.cert
+      keyFile: /acme/domain.key
+      stores:
+        - default
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /acme/defaultcert.crt
+        keyFile: /acme/defaultcert.key
+
+providers:
+#  file:
+#    directory: "./conf/"
+#    watch: true
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: "traefik"
