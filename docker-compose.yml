@@ -1,0 +1,81 @@
+version: '3'
+services:
+  traefik:
+    image: traefik:latest
+    networks:
+      - traefik
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8090:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik.yaml:/traefik.yaml"
+      - "/etc/acme:/acme"
+    labels:
+      - "traefik.docker.network=traefiked_wp_traefik"
+#      volumes:
+#        - /var/run/docker.sock:/var/run/docker.sock
+# Before running something like this stack in production, make sure you store both your Traefik toml config
+# file and acme.json in a durable volume that's mounted in the container:
+#        - /config:/etc/traefik
+#     command: traefik --web -l DEBUG --docker --docker.swarmmode --docker.watch -c /etc/traefik/traefik.toml
+
+
+  web-dreamer.de:
+    image: wordpress:latest
+    ports:
+      - "80"
+    environment:
+      WORDPRESS_DB_HOST: webdreamerde_db:3306
+      WORDPRESS_DB_NAME: ${DBNAME}
+      #WORDPRESS_TABLE_PREFIX: ""
+      WORDPRESS_DB_USER: ${DBUSER}
+      WORDPRESS_DB_PASSWORD: ${DBPASS}
+    volumes:
+       - webdreamerde_wp:/var/www/html
+       - wp_mysql_socket:/var/run/mysqld/
+    networks:
+      - db
+      - traefik
+    depends_on:
+      - webdreamerde_db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wdrede.entrypoints=web,websecure"
+      - "traefik.http.routers.wdrede.rule=Host(`c.jru.me`)"
+      - "traefik.docker.network=traefiked_wp_traefik"
+      - "traefik.http.routers.wdrede.tls=true"
+      - "traefik.http.routers.wdrede.tls.certresolver=c_jru_me"
+    restart: on-failure
+
+
+  webdreamerde_db:
+    image: mariadb:latest
+    stop_grace_period: 45s
+    environment:
+      - TZ=${TZ}
+      - MYSQL_ROOT_PASSWORD=${DBROOT}
+      - MYSQL_DATABASE=${DBNAME}
+      - MYSQL_USER=${DBUSER}
+      - MYSQL_PASSWORD=${DBPASS}
+      - MYSQL_INITDB_SKIP_TZINFO=1
+    restart: always
+    ports:
+      - "${SQL_PORT:-127.0.0.1:13306}:3306"
+    networks:
+      - db
+    volumes:
+      - webdreamerde_db-1:/var/lib/mysql/
+      - wp_mysql_socket:/var/run/mysqld/
+  #        - ./data/conf/mysql/:/etc/mysql/conf.d/:ro
+
+
+networks:
+  traefik:
+  db:
+
+volumes:
+  webdreamerde_wp:
+  webdreamerde_db-1:
+  wp_mysql_socket:
