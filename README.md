@@ -33,7 +33,7 @@ optional arguments:
   -oe OUTPUT_ENV, --output_env OUTPUT_ENV
                         output will overwrite ".env" in default - please take care of modifcations
 ```
-
+**Please take care to change Password in '.env' file after regeneration***
 # References
 This project uses the following Docker images:
 * The [Official Docker Wordpress image](https://hub.docker.com/_/wordpress/)
