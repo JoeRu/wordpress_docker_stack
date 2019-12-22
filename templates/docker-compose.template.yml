@@ -1,0 +1,47 @@
+
+  @DOMAIN:
+    image: wordpress:latest
+    ports:
+      - "80"
+    environment:
+      WORDPRESS_DB_HOST: @DOMAIN_db:3306
+      WORDPRESS_DB_NAME: ${@DOMAIN_DBNAME}
+      #WORDPRESS_TABLE_PREFIX: ""
+      WORDPRESS_DB_USER: ${@DOMAIN_DBUSER}
+      WORDPRESS_DB_PASSWORD: ${@DOMAIN_DBPASS}
+    volumes:
+       - @DOMAIN_wp:/var/www/html
+       - @DOMAIN_socket:/var/run/mysqld/
+    networks:
+      - db
+      - traefik
+    depends_on:
+      - @DOMAIN_db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.@DOMAIN.entrypoints=web,websecure"
+      - "traefik.http.routers.@DOMAIN.rule=Host(`@DOMAIN||www.@DOMAIN`)"
+#      - "traefik.docker.network=traefiked_wp_traefik"
+      - "traefik.http.routers.@DOMAIN.tls=true"
+      - "traefik.http.routers.@DOMAIN.tls.certresolver=my_certresolver"
+    restart: on-failure
+
+  @DOMAIN_db:
+    image: mariadb:latest
+    stop_grace_period: 45s
+    environment:
+      - TZ=${TZ}
+      - MYSQL_ROOT_PASSWORD=${@DOMAIN_DBROOT}
+      - MYSQL_DATABASE=${@DOMAIN_DBNAME}
+      - MYSQL_USER=${@DOMAIN_DBUSER}
+      - MYSQL_PASSWORD=${@DOMAIN_DBPASS}
+      - MYSQL_INITDB_SKIP_TZINFO=1
+    restart: always
+    ports:
+      - "3306"
+    networks:
+      - db
+    volumes:
+      - @DOMAIN_db:/var/lib/mysql/
+      - @DOMAIN_socket:/var/run/mysqld/
+  #        - ./data/conf/mysql/:/etc/mysql/conf.d/:ro

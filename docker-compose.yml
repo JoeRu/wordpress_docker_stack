@@ -1,4 +1,8 @@
 version: '3'
+networks:
+  traefik:
+  db:
+
 services:
   traefik:
     image: traefik:latest
@@ -11,71 +15,161 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./traefik.yaml:/traefik.yaml"
-      - "/etc/acme:/acme"
-    labels:
-      - "traefik.docker.network=traefiked_wp_traefik"
-#      volumes:
-#        - /var/run/docker.sock:/var/run/docker.sock
-# Before running something like this stack in production, make sure you store both your Traefik toml config
-# file and acme.json in a durable volume that's mounted in the container:
-#        - /config:/etc/traefik
-#     command: traefik --web -l DEBUG --docker --docker.swarmmode --docker.watch -c /etc/traefik/traefik.toml
-
+      - "./acme:/acme"
+#    labels:
+#      - "traefik.docker.network=traefiked_wp_traefik"
 
   web-dreamer.de:
     image: wordpress:latest
     ports:
       - "80"
     environment:
-      WORDPRESS_DB_HOST: webdreamerde_db:3306
-      WORDPRESS_DB_NAME: ${DBNAME}
+      WORDPRESS_DB_HOST: web-dreamer.de_db:3306
+      WORDPRESS_DB_NAME: ${web-dreamer.de_DBNAME}
       #WORDPRESS_TABLE_PREFIX: ""
-      WORDPRESS_DB_USER: ${DBUSER}
-      WORDPRESS_DB_PASSWORD: ${DBPASS}
+      WORDPRESS_DB_USER: ${web-dreamer.de_DBUSER}
+      WORDPRESS_DB_PASSWORD: ${web-dreamer.de_DBPASS}
     volumes:
-       - webdreamerde_wp:/var/www/html
-       - wp_mysql_socket:/var/run/mysqld/
+       - web-dreamer.de_wp:/var/www/html
+       - web-dreamer.de_socket:/var/run/mysqld/
     networks:
       - db
       - traefik
     depends_on:
-      - webdreamerde_db
+      - web-dreamer.de_db
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wdrede.entrypoints=web,websecure"
-      - "traefik.http.routers.wdrede.rule=Host(`c.jru.me`)"
-      - "traefik.docker.network=traefiked_wp_traefik"
-      - "traefik.http.routers.wdrede.tls=true"
-      - "traefik.http.routers.wdrede.tls.certresolver=c_jru_me"
+      - "traefik.http.routers.web-dreamer.de.entrypoints=web,websecure"
+      - "traefik.http.routers.web-dreamer.de.rule=Host(`web-dreamer.de||www.web-dreamer.de`)"
+#      - "traefik.docker.network=traefiked_wp_traefik"
+      - "traefik.http.routers.web-dreamer.de.tls=true"
+      - "traefik.http.routers.web-dreamer.de.tls.certresolver=my_certresolver"
     restart: on-failure
 
-
-  webdreamerde_db:
+  web-dreamer.de_db:
     image: mariadb:latest
     stop_grace_period: 45s
     environment:
       - TZ=${TZ}
-      - MYSQL_ROOT_PASSWORD=${DBROOT}
-      - MYSQL_DATABASE=${DBNAME}
-      - MYSQL_USER=${DBUSER}
-      - MYSQL_PASSWORD=${DBPASS}
+      - MYSQL_ROOT_PASSWORD=${web-dreamer.de_DBROOT}
+      - MYSQL_DATABASE=${web-dreamer.de_DBNAME}
+      - MYSQL_USER=${web-dreamer.de_DBUSER}
+      - MYSQL_PASSWORD=${web-dreamer.de_DBPASS}
       - MYSQL_INITDB_SKIP_TZINFO=1
     restart: always
     ports:
-      - "${SQL_PORT:-127.0.0.1:13306}:3306"
+      - "3306"
     networks:
       - db
     volumes:
-      - webdreamerde_db-1:/var/lib/mysql/
-      - wp_mysql_socket:/var/run/mysqld/
+      - web-dreamer.de_db:/var/lib/mysql/
+      - web-dreamer.de_socket:/var/run/mysqld/
   #        - ./data/conf/mysql/:/etc/mysql/conf.d/:ro
 
+  imkerverein-usingen.de:
+    image: wordpress:latest
+    ports:
+      - "80"
+    environment:
+      WORDPRESS_DB_HOST: imkerverein-usingen.de_db:3306
+      WORDPRESS_DB_NAME: ${imkerverein-usingen.de_DBNAME}
+      #WORDPRESS_TABLE_PREFIX: ""
+      WORDPRESS_DB_USER: ${imkerverein-usingen.de_DBUSER}
+      WORDPRESS_DB_PASSWORD: ${imkerverein-usingen.de_DBPASS}
+    volumes:
+       - imkerverein-usingen.de_wp:/var/www/html
+       - imkerverein-usingen.de_socket:/var/run/mysqld/
+    networks:
+      - db
+      - traefik
+    depends_on:
+      - imkerverein-usingen.de_db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.imkerverein-usingen.de.entrypoints=web,websecure"
+      - "traefik.http.routers.imkerverein-usingen.de.rule=Host(`imkerverein-usingen.de||www.imkerverein-usingen.de`)"
+#      - "traefik.docker.network=traefiked_wp_traefik"
+      - "traefik.http.routers.imkerverein-usingen.de.tls=true"
+      - "traefik.http.routers.imkerverein-usingen.de.tls.certresolver=my_certresolver"
+    restart: on-failure
 
-networks:
-  traefik:
-  db:
+  imkerverein-usingen.de_db:
+    image: mariadb:latest
+    stop_grace_period: 45s
+    environment:
+      - TZ=${TZ}
+      - MYSQL_ROOT_PASSWORD=${imkerverein-usingen.de_DBROOT}
+      - MYSQL_DATABASE=${imkerverein-usingen.de_DBNAME}
+      - MYSQL_USER=${imkerverein-usingen.de_DBUSER}
+      - MYSQL_PASSWORD=${imkerverein-usingen.de_DBPASS}
+      - MYSQL_INITDB_SKIP_TZINFO=1
+    restart: always
+    ports:
+      - "3306"
+    networks:
+      - db
+    volumes:
+      - imkerverein-usingen.de_db:/var/lib/mysql/
+      - imkerverein-usingen.de_socket:/var/run/mysqld/
+  #        - ./data/conf/mysql/:/etc/mysql/conf.d/:ro
+
+  stamm-hattstein.de:
+    image: wordpress:latest
+    ports:
+      - "80"
+    environment:
+      WORDPRESS_DB_HOST: stamm-hattstein.de_db:3306
+      WORDPRESS_DB_NAME: ${stamm-hattstein.de_DBNAME}
+      #WORDPRESS_TABLE_PREFIX: ""
+      WORDPRESS_DB_USER: ${stamm-hattstein.de_DBUSER}
+      WORDPRESS_DB_PASSWORD: ${stamm-hattstein.de_DBPASS}
+    volumes:
+       - stamm-hattstein.de_wp:/var/www/html
+       - stamm-hattstein.de_socket:/var/run/mysqld/
+    networks:
+      - db
+      - traefik
+    depends_on:
+      - stamm-hattstein.de_db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.stamm-hattstein.de.entrypoints=web,websecure"
+      - "traefik.http.routers.stamm-hattstein.de.rule=Host(`stamm-hattstein.de||www.stamm-hattstein.de`)"
+#      - "traefik.docker.network=traefiked_wp_traefik"
+      - "traefik.http.routers.stamm-hattstein.de.tls=true"
+      - "traefik.http.routers.stamm-hattstein.de.tls.certresolver=my_certresolver"
+    restart: on-failure
+
+  stamm-hattstein.de_db:
+    image: mariadb:latest
+    stop_grace_period: 45s
+    environment:
+      - TZ=${TZ}
+      - MYSQL_ROOT_PASSWORD=${stamm-hattstein.de_DBROOT}
+      - MYSQL_DATABASE=${stamm-hattstein.de_DBNAME}
+      - MYSQL_USER=${stamm-hattstein.de_DBUSER}
+      - MYSQL_PASSWORD=${stamm-hattstein.de_DBPASS}
+      - MYSQL_INITDB_SKIP_TZINFO=1
+    restart: always
+    ports:
+      - "3306"
+    networks:
+      - db
+    volumes:
+      - stamm-hattstein.de_db:/var/lib/mysql/
+      - stamm-hattstein.de_socket:/var/run/mysqld/
+  #        - ./data/conf/mysql/:/etc/mysql/conf.d/:ro
 
 volumes:
-  webdreamerde_wp:
-  webdreamerde_db-1:
-  wp_mysql_socket:
+
+  web-dreamer.de_socket:
+  web-dreamer.de_wp:
+  web-dreamer.de_db:
+
+  imkerverein-usingen.de_socket:
+  imkerverein-usingen.de_wp:
+  imkerverein-usingen.de_db:
+
+  stamm-hattstein.de_socket:
+  stamm-hattstein.de_wp:
+  stamm-hattstein.de_db:

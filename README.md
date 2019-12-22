@@ -1,25 +1,41 @@
 # wordpress_docker_stack
 
-This *project* will generate a docker-compose file for a bunch of domains .... 
+This *project* will generate a docker-compose file for a bunch of domains ....
 
-it uses traefik as reverseproxy and to take care of letsencrypt certfificates
+it uses traefik as reverseproxy and to take care of letsencrypt certfificates.
 
-* One MariaDB database configured for Galera-based clustering using swarm mode DNS for discovery
-* One Traefik proxying/load balancing container 
+There is pretty much only one variable in the templates which is ```@domain```. The '@' Symbol replaces the regular '$'-Symbol from yml in the templates to not mix up things.
+
+domains are configured in domains.config.txt - where each line is a domain; per default traefik is covering 'www.'. If there is a need to adapt Traefik Host variable the file "templates/docker-dockercompose.template.yml" can be adapted.
+
+For more easy migration every wordpress and wordpress-db is covered in its on volume. Docker-volumes can be found according to docker-documentation. (in Linux mostly '/var/lib/docker/volumes/')
+
+**Be aware any existing docker-compose.yml and .env files will be overwrite without further warning!**
+
+* One MariaDB database configured
+* One Traefik proxying/load balancing container
 
 # Usage
 
-These services can be started using the following command:
-    
 ```
-docker stack deploy --compose-file docker-compose.yml traefiked-wordpress
-```
+python .\generate_docker_compose.py
 
-This will bring up 2 wordpress containers, a single dbcluster
-container, and a traefik container.
+usage: generate_docker_compose.py [-h] [-i INPUT] [-o OUTPUT_DC] [-oe OUTPUT_ENV]
+
+Generator f. dockerized wordpress traefik container-set
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        configuration-file with a list of domains working with wordpress
+  -o OUTPUT_DC, --output_dc OUTPUT_DC
+                        output will overwrite "docker-compose.yml" in default - please take care of modifcations
+  -oe OUTPUT_ENV, --output_env OUTPUT_ENV
+                        output will overwrite ".env" in default - please take care of modifcations
+```
 
 # References
 This project uses the following Docker images:
-* PHP 7.1/Apache version of the [Official Docker Wordpress image](https://hub.docker.com/_/wordpress/)
-* ToughIQ's [MariaDB Galera Cluster image](https://hub.docker.com/r/toughiq/mariadb-cluster/)
+* The [Official Docker Wordpress image](https://hub.docker.com/_/wordpress/)
+* MariaDB
 * The [Traefik](https://hub.docker.com/_/traefik/) load balancer

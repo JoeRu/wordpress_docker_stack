@@ -11,7 +11,7 @@ entryPoints:
 #  insecure: true
 
 certificatesResolvers:
-  c_jru_me:
+  my_certresolver:
     acme:
       email: ich+b@jru.me
       storage: /acme/acme.json
