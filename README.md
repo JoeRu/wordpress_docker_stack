@@ -8,9 +8,10 @@ There is pretty much only one variable in the templates which is ```@domain```. 
 
 domains are configured in domains.config.txt - where each line is a domain; per default traefik is covering 'www.'. If there is a need to adapt Traefik Host variable the file "templates/docker-dockercompose.template.yml" can be adapted.
 
-For more easy migration every wordpress and wordpress-db is covered in its on volume. Docker-volumes can be found according to docker-documentation. (in Linux mostly '/var/lib/docker/volumes/')
+For more easy migration every wordpress and wordpress-db is covered in its own volume. Docker-volumes can be found according to docker-documentation. (in Linux mostly '/var/lib/docker/volumes/')
 
-**Be aware any existing docker-compose.yml and .env files will be overwrite without further warning!**
+**Be aware any existing docker-compose.yml files will be overwrite without further warning!**
+** Please take care of the .env file - as it containes Database-Passwords**
 
 * One MariaDB database configured
 * One Traefik proxying/load balancing container

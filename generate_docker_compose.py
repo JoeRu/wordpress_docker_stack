@@ -3,7 +3,7 @@ from string import Template
 import logging
 import argparse
 import os
-
+import re
 parser = argparse.ArgumentParser(description='Generator f. dockerized wordpress traefik container-set')
 parser.add_argument('-i', '--input', default='domains.config.txt', type=str, help='configuration-file with a list of domains working with wordpress')
 parser.add_argument('-o', '--output_dc', default='docker-compose.yml', type=str, help='output will overwrite "docker-compose.yml" in default - please take care of modifcations')
@@ -35,6 +35,20 @@ class MyTemplate(Template):
     delimiter = "@"
     idpattern = "[a-z][a-z0-9]*"
 
+full_pattern = re.compile('[^a-zA-Z0-9]')
+
+def re_replace(string):
+    return re.sub(full_pattern, '_', string)
+
+import random
+import string
+
+def randomStringwithDigitsAndSymbols(stringLength=10):
+    """Generate a random string of letters, digits and special characters """
+
+    password_characters = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(random.choice(password_characters) for i in range(stringLength))
+
 logger.info('Reading template files')
 fo = open(os.path.join("templates","docker-compose.template.yml"), "r")
 dc_template = MyTemplate(fo.read())
@@ -60,12 +74,20 @@ volumes_template = MyTemplate(
 
 logger.info('Open outputfiles for writing')
 #open for creation
-env_file = open(output_env,"w")
+if os.path.isfile(output_env):
+# file exists - overwrite?
+    env_file = open('temp_env',"w")
+else:
+    env_file = open(output_env,"w")
+
 dockercompose = open(output_dc, "w")
 
 volumes = ""
-environment = "TZ=Europe/Berlin"
+environment = """
+TZ=Europe/Berlin
+"""
 
+lv_DBPORT=3306
 #print(dc_template.substitute(d))
 logger.info('write docker-compose-file {}:'.format(output_dc))
 dockercompose.write(dc_fix)
@@ -78,13 +100,14 @@ with open(INPUT) as f:
     logger.info('generating Domains: {}'.format(content))
 
 for each in content:
-    domain = dict(DOMAIN=each)
+    domain = dict(HOST=each, DOMAIN=re_replace(each),RANDOM1=randomStringwithDigitsAndSymbols(), RANDOM2=randomStringwithDigitsAndSymbols(), DBPORT=str(lv_DBPORT)) # replace dots in domain with underscore
 
     dockercompose.write(dc_template.substitute(domain))
     logger.debug(dc_template.substitute(domain))
 
     environment = environment + env_template.substitute(domain)
     volumes = volumes + volumes_template.substitute(domain)
+    lv_DBPORT += 1
 
 
 logger.debug('environment file')
