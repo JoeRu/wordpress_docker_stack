@@ -19,9 +19,13 @@
       - @DOMAIN_db
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.@DOMAIN.entrypoints=web,websecure"
-      - "traefik.http.routers.@DOMAIN.rule=Host(`@DOMAIN||www.@DOMAIN`)"
-#      - "traefik.docker.network=traefiked_wp_traefik"
+      - "traefik.http.routers.@DOMAIN_http.entrypoints=web"
+      - "traefik.http.routers.@DOMAIN_http.rule=Host(`@HOST`, `www.@HOST`)"
+      - "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.@DOMAIN_http.middlewares=https_redirect"
+      - "traefik.http.routers.@DOMAIN.entrypoints=websecure"
+      - "traefik.http.routers.@DOMAIN.rule=Host(`@HOST`, `www.@HOST`)"
+      - "traefik.docker.network=wordpress_docker_stack_traefik"
       - "traefik.http.routers.@DOMAIN.tls=true"
       - "traefik.http.routers.@DOMAIN.tls.certresolver=my_certresolver"
     restart: on-failure
@@ -38,7 +42,7 @@
       - MYSQL_INITDB_SKIP_TZINFO=1
     restart: always
     ports:
-      - "3306"
+      - "127.0.0.1:@DBPORT:3306"
     networks:
       - db
     volumes:

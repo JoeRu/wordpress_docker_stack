@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 networks:
   traefik:
   db:
@@ -11,10 +11,10 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "8090:8080"
+ #     - "8090:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./traefik.yaml:/traefik.yaml"
       - "./acme:/acme"
-#    labels:
-#      - "traefik.docker.network=traefiked_wp_traefik"
+    labels:
+      - "traefik.docker.network=wordpress_docker_stack_traefik"
