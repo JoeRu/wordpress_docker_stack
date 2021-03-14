@@ -6,11 +6,11 @@ it uses traefik as reverseproxy and to take care of letsencrypt certfificates.
 
 There is pretty much only one variable in the templates which is ```@domain```. The '@' Symbol replaces the regular '$'-Symbol from yml in the templates to not mix up things.
 
-domains are configured in domains.config.txt - where each line is a domain; per default traefik is covering 'www.'. If there is a need to adapt Traefik Host variable the file "templates/docker-dockercompose.template.yml" can be adapted.
+Domains are configured in domains.config.txt - where each line is a domain; per default traefik is covering 'www.'. If there is a need to adapt Traefik Host variable the file "templates/docker-dockercompose.template.yml" can be adapted.
 
 For more easy migration every wordpress and wordpress-db is covered in its own volume. Docker-volumes can be found according to docker-documentation. (in Linux mostly '/var/lib/docker/volumes/')
 
-**Be aware any existing docker-compose.yml files will be overwrite without further warning!**
+**Be aware any existing docker-compose.yml files will be overwritten without further warning!**
 ** Please take care of the .env file - as it containes Database-Passwords**
 
 * One MariaDB database configured
